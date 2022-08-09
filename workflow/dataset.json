@@ -1,0 +1,28 @@
+{
+  "title": "Colorado Irrigated Lands",
+  "description": "Colorado irrigated lands.",
+  "identifier": "owf-data-co-dwr-irrigated-lands",
+  "landingPage": "https://data.openwaterfoundation.org/state/co/dwr/irrigated-lands/",
+  "issued": "2022-08-08",
+  "keyword": [
+    "polygon",
+    "line",
+    "canals",
+    "irrigated parcels",
+    "irrigated lands",
+    "service area"
+  ],
+  "publisher": {
+    "name": "Open Water Foundation",
+    "mbox": "info@openwaterfoundation.org"
+  },
+  "distribution": [
+    {
+      "accessURL": "",
+      "byteSize": null,
+      "description": "Resource locator",
+      "format": "application/geo+json",
+      "title": "Colorado Irrigated Lands"
+    }
+  ]
+}
