@@ -4,11 +4,11 @@ StartLog(LogFile="results/02b-upload-dataset-to-s3.tstool.log")
 #
 # Define controlling properties:
 # - InsertsFolder is the location of data.openwaterfoundation.org inserts for the landing page
-SetProperty(PropertyName="InsertsFolder",PropertyType=String,PropertyValue="../../owf-website-data/inserts")
+SetProperty(PropertyName="InsertsFolder",PropertyType="String",PropertyValue="../../owf-website-data/inserts")
 #
 # Expand the dataset details to use the table that was generated from the script:
 # - this must be done before uploading the dataset-details.md file to the cloud
-ReadPropertiesFromFile(InputFile="results\dataset-details-table.md",FileFormat=Value,IncludeProperty="DatasetDownloadsMarkdown")
+ReadPropertiesFromFile(InputFile="results\dataset-details-table.md",FileFormat="Value",IncludeProperties="DatasetDownloadsMarkdown")
 TextEdit(InputFile="dataset-details-0.md",SearchFor="INSERT_DOWNLOADS_SECTION",ReplaceWith="${DatasetDownloadsMarkdown}",OutputFile="results/dataset-details.md")
 #
 # Upload the files:
@@ -16,25 +16,30 @@ TextEdit(InputFile="dataset-details-0.md",SearchFor="INSERT_DOWNLOADS_SECTION",R
 # - dataset metadata files needed for landing page
 # - the first command processes all the files
 # - uncomment and run specific commands if subsets of files are processed
-# AwsS3(S3Command="UploadObjects",Region="us-west-2",Bucket="data.openwaterfoundation.org",UploadFiles="../data/*.geojson:state/co/dwr/irrigated-lands/*,dataset.json:state/co/dwr/irrigated-lands/dataset.json,dataset.png:state/co/dwr/irrigated-lands/dataset.png,results/dataset-details.md:state/co/dwr/irrigated-lands/dataset-details.md")
-# AwsS3(S3Command="UploadObjects",Region="us-west-2",Bucket="data.openwaterfoundation.org",UploadFiles="dataset.json:state/co/dwr/irrigated-lands/dataset.json,dataset.png:state/co/dwr/irrigated-lands/dataset.png,results/dataset-details.md:state/co/dwr/irrigated-lands/dataset-details.md,../data/*district3*geojson:state/co/dwr/irrigated-lands/*")
-AwsS3(S3Command="UploadObjects",Region="us-west-2",Bucket="data.openwaterfoundation.org",UploadFiles="dataset.json:state/co/dwr/irrigated-lands/dataset.json,dataset.png:state/co/dwr/irrigated-lands/dataset.png,results/dataset-details.md:state/co/dwr/irrigated-lands/dataset-details.md")
+# Upload dataset landing page and all *.geojson data files.
+# AwsS3(S3Command="UploadObjects",Region="us-west-2",Bucket="data.openwaterfoundation.org",UploadFiles="../data/*.geojson:state/co/dwr/irrigated-lands/*,dataset.json:state/co/dwr/irrigated-lands/dataset.json,dataset.png:state/co/dwr/irrigated-lands/dataset.png,results/dataset-details.md:state/co/dwr/irrigated-lands/dataset-details.md",InvalidateCloudFront="True",CloudFrontRegion="aws-global",CloudFrontComment="*data.openwaterfoundation.org*",CloudFrontCallerReference="TSToolDwrIrrigatedLands")
+# Upload dataset landing page and all district *.geojson data files.
+AwsS3(S3Command="UploadObjects",Region="us-west-2",Bucket="data.openwaterfoundation.org",UploadFiles="dataset.json:state/co/dwr/irrigated-lands/dataset.json,dataset.png:state/co/dwr/irrigated-lands/dataset.png,results/dataset-details.md:state/co/dwr/irrigated-lands/dataset-details.md,../data/*district3*geojson:state/co/dwr/irrigated-lands/*,../data/*district4*geojson:state/co/dwr/irrigated-lands/*,../data/*district5*geojson:state/co/dwr/irrigated-lands/*,../data/*district6*geojson:state/co/dwr/irrigated-lands/*,../data/*district7*geojson:state/co/dwr/irrigated-lands/*",InvalidateCloudFront="True",CloudFrontRegion="aws-global",CloudFrontComment="*data.openwaterfoundation.org*",CloudFrontCallerReference="TSToolDwrIrrigatedLands")
+# Upload the dataset landing page only.
+AwsS3(S3Command="UploadObjects",Region="us-west-2",Bucket="data.openwaterfoundation.org",UploadFiles="dataset.json:state/co/dwr/irrigated-lands/dataset.json,dataset.png:state/co/dwr/irrigated-lands/dataset.png,results/dataset-details.md:state/co/dwr/irrigated-lands/dataset-details.md",InvalidateCloudFront="True",CloudFrontRegion="aws-global",CloudFrontComment="*data.openwaterfoundation.org*",CloudFrontCallerReference="TSToolDwrIrrigatedLands")
 #
 # Invalidate so that files are available on the CDN as soon as possible:
 # - the first command processes all the files
 # - uncomment and run specific commands if subsets of files are processed
+# - if invalidation occurs in the upload script don't need to invalidate below
 # AwsCloudFront(CloudFrontCommand="InvalidateDistribution",Region="aws-global",Comment="*data.openwaterfoundation.org*",InvalidationPaths="/state/co/dwr/irrigated-lands/*")
-AwsCloudFront(CloudFrontCommand="InvalidateDistribution",Region="aws-global",Comment="*data.openwaterfoundation.org*",InvalidationPaths="/state/co/dwr/irrigated-lands/dataset*")
+# AwsCloudFront(CloudFrontCommand="InvalidateDistribution",Region="aws-global",Comment="*data.openwaterfoundation.org*",InvalidationPaths="/state/co/dwr/irrigated-lands/dataset*")
 #
 # Create the dataset catalog with landing page:
 # - also list invalidations to see what is in process
-AwsS3Catalog(Region="us-west-2",Bucket="data.openwaterfoundation.org",StartingPrefix="state/co/dwr/irrigated-lands/",DistributionId="*data.openwaterfoundation.org*",DatasetIndexFile="results/dataset-index.html",DatasetIndexHeadFile="${InsertsFolder}/head-insert.html",DatasetIndexBodyFile="${InsertsFolder}/body-nav-insert.html",DatasetIndexFooterFile="${InsertsFolder}/footer-insert.html",UploadDatasetFiles=True,OutputTableID="Datasets",KeepFiles=True)
+AwsS3LandingPage(Bucket="data.openwaterfoundation.org",DatasetIndexFile="results/dataset-index.html",StartingFolder="state/co/dwr/irrigated-lands/",KeepFiles="True",UploadFiles="True",DatasetIndexHeadInsertTopFiles="${InsertsFolder}/head-insert.html",DatasetIndexBodyInsertTopFiles="${InsertsFolder}/body-nav-insert.html",DatasetIndexBodyInsertBottomFiles="${InsertsFolder}/footer-insert.html",InvalidateCloudFront="True",CloudFrontRegion="aws-global",CloudFrontComment="*data.openwaterfoundation.org*",CloudFrontCallerReference="TSToolDwrIrrigatedLands")
+# AwsS3Catalog(Region="us-west-2",Bucket="data.openwaterfoundation.org",StartingPrefix="state/co/dwr/irrigated-lands/",DatasetIndexFile="results/dataset-index.html",DatasetIndexHeadFile="${InsertsFolder}/head-insert.html",DatasetIndexBodyFile="${InsertsFolder}/body-nav-insert.html",DatasetIndexFooterFile="${InsertsFolder}/footer-insert.html",UploadDatasetFiles="True",DistributionId="*data.openwaterfoundation.org*",OutputTableID="Datasets",KeepFiles="True")
 # AwsCloudFront(CloudFrontCommand="ListInvalidations",Region="af-south-1",OutputTableID="InvalidationList")
 # Compare the local and S3 file to see how long it takes to be avaialable on S3.
-CompareFiles(InputFile1="results/dataset-index.html",InputFile2="https://s3.us-west-2.amazonaws.com/data.openwaterfoundation.org/state/co/dwr/irrigated-lands/index.html",IfDifferent=Warn,WaitUntil=FilesAreSame,WaitTimeout=600000,WaitInterval=60000)
+CompareFiles(InputFile1="results/dataset-index.html",InputFile2="https://s3.us-west-2.amazonaws.com/data.openwaterfoundation.org/state/co/dwr/irrigated-lands/index.html",IfDifferent="Warn",WaitUntil="FilesAreSame",WaitTimeout="600000",WaitInterval="60000")
 # Compare the local and CloudFront file to see how long it takes to be avaialable on CloudFront.
-CompareFiles(InputFile1="results/dataset-index.html",InputFile2="https://data.openwaterfoundation.org/state/co/dwr/irrigated-lands/index.html",IfDifferent=Warn,WaitUntil=FilesAreSame,WaitTimeout=600000,WaitInterval=60000)
+CompareFiles(InputFile1="results/dataset-index.html",InputFile2="https://data.openwaterfoundation.org/state/co/dwr/irrigated-lands/index.html",IfDifferent="Warn",WaitUntil="FilesAreSame",WaitTimeout="600000",WaitInterval="60000")
 # Compare the index.html and folder name URLs to make sure that all variants were invalidated:
 # - the AWS configuration should automatically add index.html to folders
-CompareFiles(InputFile1="https://data.openwaterfoundation.org/state/co/dwr/irrigated-lands/index.html",InputFile2="https://data.openwaterfoundation.org/state/co/dwr/irrigated-lands/",IfDifferent=Warn,WaitUntil=FilesAreSame,WaitTimeout=600000,WaitInterval=60000)
-CompareFiles(InputFile1="https://data.openwaterfoundation.org/state/co/dwr/irrigated-lands/index.html",InputFile2="https://data.openwaterfoundation.org/state/co/dwr/irrigated-lands",IfDifferent=Warn,WaitUntil=FilesAreSame,WaitTimeout=600000,WaitInterval=60000)
+CompareFiles(InputFile1="https://data.openwaterfoundation.org/state/co/dwr/irrigated-lands/index.html",InputFile2="https://data.openwaterfoundation.org/state/co/dwr/irrigated-lands/",IfDifferent="Warn",WaitUntil="FilesAreSame",WaitTimeout="600000",WaitInterval="60000")
+CompareFiles(InputFile1="https://data.openwaterfoundation.org/state/co/dwr/irrigated-lands/index.html",InputFile2="https://data.openwaterfoundation.org/state/co/dwr/irrigated-lands",IfDifferent="Warn",WaitUntil="FilesAreSame",WaitTimeout="600000",WaitInterval="60000")

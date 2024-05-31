@@ -1,11 +1,13 @@
+StartLog(LogFile="results/01b-split-irrigated-lands-layers-district3.gp.log")
 # Split the division layers into districts:
+# - this is for District 3 (Poudre)
 # - allow ditch data to extend beyond the district boundary
 #
 # Make sure a folder exists for the processing.
 CreateFolder(Folder="downloads/split",CreateParentFolders="True",IfFolderExists="Ignore")
 #
 # Read the Division 1 irrigated lands to split by district:
-# - read from GeoJSON so that CRS is OK for later algoritms
+# - read from GeoJSON so that CRS is OK for later algorithms
 # - have to fix because intersection complains later
 ReadGeoLayerFromGeoJSON(InputFile="../data/co-dwr-irrigated-lands-division1-2020.geojson",GeoLayerID="co-dwr-irrigated-lands-division1-2020")
 FixGeoLayer(GeoLayerID="co-dwr-irrigated-lands-division1-2020",OutputGeoLayerID="co-dwr-irrigated-lands-division1-2020")
@@ -59,6 +61,7 @@ WriteGeoLayerToGeoJSON(GeoLayerID="co-dwr-canals-district3",OutputFile="../data/
 #WriteGeoLayerToGeoJSON(GeoLayerID="co-dwr-ditch-service-area-district3-2005",OutputFile="../data/co-dwr-ditch-service-area-district3-2005.geojson")
 #
 # Intersect the district with the irrigated lands features:
+# - ditch service area years are carried forward as necessary if service area year is not available for an irrigated acreage year
 # - allow extending outside of the district so that ditch service areas are complete
 ReadGeoLayerFromGeoJSON(InputFile="../data/co-dwr-ditch-service-area-district3-2005.geojson",GeoLayerID="co-dwr-ditch-service-area-district3-2005-geojson")
 FixGeoLayer(GeoLayerID="co-dwr-ditch-service-area-district3-2005-geojson",OutputGeoLayerID="co-dwr-ditch-service-area-district3-2005-geojson")
@@ -84,7 +87,7 @@ IntersectGeoLayer(GeoLayerID="co-dwr-irrigated-lands-division1-2005",IntersectGe
 WriteGeoLayerToGeoJSON(GeoLayerID="co-dwr-irrigated-lands-district3-2005",OutputFile="../data/co-dwr-irrigated-lands-district3-2005.geojson")
 #
 IntersectGeoLayer(GeoLayerID="co-dwr-irrigated-lands-division1-2001",IntersectGeoLayerID="co-dwr-ditch-service-area-district3-2001-geojson",OutputGeoLayerID="co-dwr-irrigated-lands-district3-2001")
-WriteGeoLayerToGeoJSON(GeoLayerID="co-dwr-irrigated-lands-district-2001",OutputFile="../data/co-dwr-irrigated-lands-district3-2001.geojson")
+WriteGeoLayerToGeoJSON(GeoLayerID="co-dwr-irrigated-lands-district3-2001",OutputFile="../data/co-dwr-irrigated-lands-district3-2001.geojson")
 #
 IntersectGeoLayer(GeoLayerID="co-dwr-irrigated-lands-division1-1997",IntersectGeoLayerID="co-dwr-ditch-service-area-district3-1987-geojson",OutputGeoLayerID="co-dwr-irrigated-lands-district3-1997")
 WriteGeoLayerToGeoJSON(GeoLayerID="co-dwr-irrigated-lands-district3-1997",OutputFile="../data/co-dwr-irrigated-lands-district3-1997.geojson")
